@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <script src="script.js"></script>
+</head>
+
+<body>
+
+<script>
+    if (!localStorage.getItem("token")) {
+        alert("Please login first.");
+        window.location.href = "login.html";
+    }
+</script>
+
+<h2>Admin Dashboard</h2>
+
+<!-- VIEW DOCUMENTS -->
+<h3>View Institution Documents</h3>
+<input id="adminInstId" placeholder="Institution ID">
+<button onclick="loadDocuments()">Load Documents</button>
+
+<ul id="docList"></ul>
+
+<hr>
+
+<!-- VERIFY INSTITUTION -->
+<h3>Verify Institution</h3>
+<input id="verifyInstId" placeholder="Institution ID"><br><br>
+<input id="reason" placeholder="Reason (optional for approval)"><br><br>
+
+<button onclick="verifyInstitution(true)">Approve</button>
+<button onclick="verifyInstitution(false)">Reject</button>
+
+<br><br>
+<a href="login.html" onclick="localStorage.clear()">Logout</a>
+
+</body>
+</html>
