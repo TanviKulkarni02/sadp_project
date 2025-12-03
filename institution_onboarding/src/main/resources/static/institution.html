@@ -1,58 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Institution Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-<h2>Institution Dashboard</h2>
-
-<div class="card">
-
-    <h3>Your Institution ID</h3>
-    <input id="instId" placeholder="Enter ID to operate">
-
-    <button onclick="loadInstitutionState()">Load Dashboard</button>
-
-    <div id="uploadSection" class="hidden">
-        <h3>Upload Required Documents</h3>
-        <input type="file" id="docFile">
-        <button onclick="uploadDocument()">Upload</button>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Institution Dashboard</h2>
+        <button onclick="logout()" class="danger" style="padding: 5px 10px; font-size: 0.8rem;">Logout</button>
     </div>
 
-    <div id="statusSection" class="hidden">
-        <h3>Application Status</h3>
-        <p id="statusText"></p>
+    <div id="idSection">
+        <p style="background: #eef2ff; padding: 10px; border-radius: 4px; font-size: 0.9rem;">
+            ℹ️ Please enter the <strong>Institution ID</strong> you received during registration.
+        </p>
+        <input type="number" id="instIdInput" placeholder="Enter Institution ID">
+        <button onclick="loadInstitutionDashboard()">Access Dashboard</button>
     </div>
 
-    <div id="rejectionSection" class="hidden">
-        <h3>Rejection Reason</h3>
-        <p id="rejectReason"></p>
-        <p>Please reupload corrected documents.</p>
-    </div>
+    <div id="dashboardContent" class="hidden">
+        <hr>
 
-    <div id="courseSection" class="hidden">
-        <h3>Add New Course</h3>
-        <input id="courseName" placeholder="Course Name">
-        <input id="courseDesc" placeholder="Course Description">
-        <button onclick="addCourse()">Add Course</button>
-    </div>
+        <div id="statusSection" class="hidden">
+            <h3>Application Status</h3>
+            <div id="statusDisplay" class="status-card"></div>
+            <p id="rejectionReason" class="hidden" style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 4px; border: 1px solid #ef4444;"></p>
+        </div>
 
+        <div id="uploadSection" class="hidden">
+            <h3>📄 Upload Verification Document</h3>
+            <p>To activate your account, please upload your verification document (PDF/Image).</p>
+            <form id="uploadForm">
+                <input type="file" id="docFile" required>
+                <button type="submit">Upload Document</button>
+            </form>
+        </div>
+
+        <div id="waitMessage" class="hidden" style="text-align: center; color: #854d0e; background: #fef9c3; padding: 20px; border-radius: 8px;">
+            <h3>⏳ Verification in Progress</h3>
+            <p>You have uploaded your documents. Please wait for Admin approval before adding courses.</p>
+        </div>
+
+        <div id="courseSection" class="hidden">
+            <h3>📚 Manage Courses</h3>
+            <p style="color: green;">You are approved! You can now add courses.</p>
+            <form id="courseForm">
+                <input type="text" id="courseName" placeholder="Course Name" required>
+                <textarea id="courseDescription" placeholder="Course Description" required></textarea>
+                <button type="submit" class="success">Add Course</button>
+            </form>
+        </div>
+    </div>
 </div>
-
 <script src="script.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const idInput = document.getElementById("instId");
-
-        // Only auto-load if ID was saved previously
-        if (localStorage.getItem("institutionId")) {
-            idInput.value = localStorage.getItem("institutionId");
-            loadInstitutionState();
-        }
-    });
-</script>
 </body>
 </html>

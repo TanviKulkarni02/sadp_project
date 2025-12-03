@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // Public frontend files
-                        .requestMatchers("/", "/home.html", "/index.html", "/login.html",
+                        .requestMatchers("/", "/index.html", "/register.html", "/login.html",
                                 "/admin.html", "/institution.html",
                                 "/style.css", "/script.js").permitAll()
 

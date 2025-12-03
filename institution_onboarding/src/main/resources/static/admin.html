@@ -1,28 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Admin Panel</h2>
+        <button onclick="logout()" class="danger" style="padding: 5px 10px; font-size: 0.8rem;">Logout</button>
+    </div>
 
-<h2>Admin Dashboard</h2>
+    <div style="margin-top: 20px;">
+        <input type="number" id="adminInstId" placeholder="Enter Institution ID to Manage">
+        <button onclick="loadAdminView()">Fetch Documents</button>
+    </div>
 
-<div class="card">
-    <h3>Enter Institution ID</h3>
-    <input id="adminInstId" placeholder="Institution ID">
-    <button onclick="loadDocuments()">Load Documents</button>
+    <hr>
 
-    <ul id="docList"></ul>
+    <div id="adminContent" class="hidden">
+        <h3>Uploaded Documents</h3>
+        <ul id="docList" class="file-list">
+        </ul>
+        <p id="noDocsMsg" class="hidden">No documents found for this institution.</p>
 
-    <h3>Verify Institution</h3>
-    <textarea id="rejectReasonBox" placeholder="Reason (required only if rejecting)"></textarea>
+        <h3>Action</h3>
+        <div class="btn-group">
+            <button onclick="verifyInstitution(true)" class="success">Approve</button>
+            <button onclick="toggleRejectBox()" class="danger">Reject</button>
+        </div>
 
-    <button onclick="approveInst()">Approve</button>
-    <button onclick="rejectInst()">Reject</button>
+        <div id="rejectBox" class="hidden" style="margin-top: 15px;">
+            <textarea id="rejectReason" placeholder="Enter reason for rejection..."></textarea>
+            <button onclick="verifyInstitution(false)" class="danger">Confirm Rejection</button>
+        </div>
+    </div>
 </div>
-
 <script src="script.js"></script>
 </body>
 </html>

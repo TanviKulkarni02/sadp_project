@@ -1,22 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Login</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+<div class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Email (or Admin Username)" required>
+        <input type="password" id="password" placeholder="Password" required>
 
-<h2>Institution Onboarding – Login</h2>
+        <div style="margin: 10px 0;">
+            <label>
+                <input type="checkbox" id="isAdmin" style="width: auto;"> Login as Admin
+            </label>
+        </div>
 
-<div class="card">
-    <input id="loginUsername" placeholder="Email">
-    <input id="loginPassword" placeholder="Phone" type="password">
-    <button onclick="doLogin()">Login</button>
-
-    <p>Not registered? <a href="index.html">Register now</a></p>
+        <button type="submit">Login</button>
+        <button type="button" class="secondary" onclick="window.location.href='index.html'">Back</button>
+    </form>
 </div>
-
 <script src="script.js"></script>
 </body>
 </html>

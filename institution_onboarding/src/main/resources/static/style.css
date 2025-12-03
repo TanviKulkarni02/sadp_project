@@ -1,36 +1,80 @@
+/* style.css */
+:root {
+    --primary: #2563eb;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #ca8a04;
+    --bg: #f3f4f6;
+    --white: #ffffff;
+}
+
 body {
-    font-family: Arial;
-    background: #f2f2f2;
-    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-.card {
-    width: 400px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 30px;
-    box-shadow: 0 0 10px #ccc;
+.container {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
 }
 
-input, button, textarea {
-    width: 90%;
-    padding: 10px;
-    margin: 10px;
-}
+h1, h2, h3 { color: #1f2937; text-align: center; }
+.btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
 
 button {
-    background: #0044cc;
-    color: white;
+    padding: 10px 20px;
     border: none;
+    border-radius: 4px;
     cursor: pointer;
+    font-weight: bold;
+    color: white;
+    background-color: var(--primary);
 }
 
-button:hover {
-    background: #003399;
+button:hover { opacity: 0.9; }
+button.secondary { background-color: #6b7280; }
+button.danger { background-color: var(--danger); }
+button.success { background-color: var(--success); }
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 
-.hidden {
-    display: none;
+.hidden { display: none !important; }
+
+/* Status Cards */
+.status-card {
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+    text-align: center;
+    font-weight: bold;
+}
+.status-PENDING { background-color: #fef9c3; color: var(--warning); border: 1px solid var(--warning); }
+.status-APPROVED { background-color: #dcfce7; color: var(--success); border: 1px solid var(--success); }
+.status-REJECTED { background-color: #fee2e2; color: var(--danger); border: 1px solid var(--danger); }
+
+.file-list { list-style: none; padding: 0; }
+.file-list li {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    padding: 10px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
