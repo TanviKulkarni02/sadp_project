@@ -2,18 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Institution Onboarding</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <h1>Welcome</h1>
-    <p style="text-align: center;">Institution Onboarding Portal</p>
-    <div class="btn-group">
-        <button onclick="window.location.href='login.html'">Login</button>
-        <button onclick="window.location.href='register.html'" class="secondary">Register Institution</button>
+<nav id="navbar" class="navbar"></nav>
+
+<div class="main-content">
+    <div class="container" style="text-align: center;">
+        <h1 style="color: var(--primary);">EduConnect</h1>
+        <p>The centralized platform for Institution Onboarding and Management.</p>
+        <div class="btn-group" style="justify-content: center;">
+            <button onclick="window.location.href='login.html'">Login</button>
+            <button onclick="window.location.href='register.html'" class="secondary">Register New</button>
+        </div>
     </div>
 </div>
+<script src="script.js"></script>
 </body>
 </html>

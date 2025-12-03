@@ -2,20 +2,66 @@
 
 const API_BASE = "/api";
 
-// --- AUTH HELPER ---
-function getToken() {
-    return localStorage.getItem("token");
+// --- UI HELPERS (Navbar & Toasts) ---
+
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Inject Navbar
+    const nav = document.getElementById("navbar");
+    const token = localStorage.getItem("token");
+
+    let navContent = `<a href="index.html" class="nav-brand">EduConnect</a>`;
+
+    if (token) {
+        navContent += `
+            <div class="nav-links">
+                <button onclick="logout()" class="secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
+            </div>
+        `;
+    } else {
+        // Only show Login link if not on auth pages
+        if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('register.html')) {
+             navContent += `
+                <div class="nav-links">
+                    <button onclick="window.location.href='login.html'" class="primary">Login</button>
+                </div>
+            `;
+        }
+    }
+
+    if(nav) nav.innerHTML = navContent;
+
+    // 2. Create Toast Container
+    const toastContainer = document.createElement("div");
+    toastContainer.id = "toast-container";
+    document.body.appendChild(toastContainer);
+});
+
+// Toast Notification Function
+function showToast(message, type = "success") {
+    const container = document.getElementById("toast-container");
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.innerText = message;
+
+    container.appendChild(toast);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
+// --- AUTH HELPER ---
+function getToken() { return localStorage.getItem("token"); }
+
 function getAuthHeaders() {
-    const token = getToken();
-    return {
-        "Authorization": `Bearer ${token}`
-    };
+    return { "Authorization": `Bearer ${getToken()}` };
 }
 
 function logout() {
     localStorage.removeItem("token");
+    sessionStorage.clear();
     window.location.href = "login.html";
 }
 
@@ -42,14 +88,15 @@ if (registerForm) {
             const result = await res.json();
 
             if (res.ok) {
+                // Keep alert here as it contains critical ID info users must see/copy
                 alert(`Registration Successful!\n\nIMPORTANT: Your Institution ID is: ${result.id}\nPlease save this ID.`);
                 window.location.href = "login.html";
             } else {
-                alert("Registration failed");
+                showToast("Registration failed", "error");
             }
         } catch (err) {
             console.error(err);
-            alert("Error connecting to server");
+            showToast("Error connecting to server", "error");
         }
     });
 }
@@ -76,29 +123,29 @@ if (loginForm) {
                 localStorage.setItem("token", token);
 
                 const isAdmin = document.getElementById("isAdmin").checked;
-                if (isAdmin) {
-                    window.location.href = "admin.html";
-                } else {
-                    window.location.href = "institution.html";
-                }
+                window.location.href = isAdmin ? "admin.html" : "institution.html";
             } else {
-                alert("Invalid Credentials");
+                showToast("Invalid Credentials", "error");
             }
         } catch (err) {
             console.error(err);
-            alert("Login Error: " + err.message);
+            showToast("Login Error: " + err.message, "error");
         }
     });
 }
 
-// --- INSTITUTION DASHBOARD LOGIC (FIXED) ---
+// --- INSTITUTION DASHBOARD ---
 async function loadInstitutionDashboard() {
     const instId = document.getElementById("instIdInput").value;
-    if (!instId) return alert("Please enter ID");
+    if (!instId) return showToast("Please enter an ID", "error");
 
     sessionStorage.setItem("currentInstId", instId);
     document.getElementById("idSection").classList.add("hidden");
     document.getElementById("dashboardContent").classList.remove("hidden");
+
+    // Update Welcome Text if exists
+    const badge = document.getElementById("welcomeBadge");
+    if(badge) badge.innerText = `Session ID: ${instId}`;
 
     try {
         const res = await fetch(`${API_BASE}/institutions/${instId}/status`, {
@@ -108,13 +155,12 @@ async function loadInstitutionDashboard() {
         if (res.status === 404 || res.status === 500) {
             renderState("NEW");
         } else {
-            const status = await res.text(); // "PENDING", "APPROVED", "REJECTED"
+            const status = await res.text();
 
-            // LOGIC FIX: Check if we have uploaded from this browser
+            // SMART STATE LOGIC
             const localUploadFlag = localStorage.getItem(`hasUploaded_${instId}`);
 
             if (status === "PENDING" && !localUploadFlag) {
-                // Backend says PENDING, but we haven't uploaded yet -> Treat as NEW
                 renderState("NEW");
             } else {
                 renderState(status);
@@ -127,48 +173,48 @@ async function loadInstitutionDashboard() {
 }
 
 function renderState(status) {
-    const statusSection = document.getElementById("statusSection");
-    const statusDisplay = document.getElementById("statusDisplay");
-    const uploadSection = document.getElementById("uploadSection");
-    const waitMessage   = document.getElementById("waitMessage");
-    const courseSection = document.getElementById("courseSection");
-    const rejectReason  = document.getElementById("rejectionReason");
+    const els = {
+        status: document.getElementById("statusSection"),
+        display: document.getElementById("statusDisplay"),
+        upload: document.getElementById("uploadSection"),
+        wait: document.getElementById("waitMessage"),
+        course: document.getElementById("courseSection"),
+        reason: document.getElementById("rejectionReason")
+    };
 
-    // Hide All
-    statusSection.classList.add("hidden");
-    uploadSection.classList.add("hidden");
-    waitMessage.classList.add("hidden");
-    courseSection.classList.add("hidden");
-    rejectReason.classList.add("hidden");
+    // Reset All
+    Object.values(els).forEach(el => { if(el) el.classList.add("hidden"); });
 
     if (status === "NEW") {
-        // Show Upload Form ONLY
-        uploadSection.classList.remove("hidden");
-        // Optional: Show a subtle "Pending" badge but emphasize upload
-        statusSection.classList.remove("hidden");
-        statusDisplay.textContent = "ACTION REQUIRED: UPLOAD DOCUMENTS";
-        statusDisplay.className = "status-card status-PENDING";
+        if(els.upload) els.upload.classList.remove("hidden");
     }
     else if (status === "PENDING") {
-        // Show Wait Message
-        statusSection.classList.remove("hidden");
-        statusDisplay.textContent = "VERIFICATION PENDING";
-        statusDisplay.className = "status-card status-PENDING";
-        waitMessage.classList.remove("hidden");
+        if(els.status) els.status.classList.remove("hidden");
+        if(els.display) {
+            els.display.textContent = "VERIFICATION PENDING";
+            els.display.className = "status-card status-PENDING";
+        }
+        if(els.wait) els.wait.classList.remove("hidden");
     }
     else if (status === "APPROVED") {
-        statusSection.classList.remove("hidden");
-        statusDisplay.textContent = "ACCOUNT APPROVED";
-        statusDisplay.className = "status-card status-APPROVED";
-        courseSection.classList.remove("hidden");
+        if(els.status) els.status.classList.remove("hidden");
+        if(els.display) {
+            els.display.textContent = "ACTIVE & APPROVED";
+            els.display.className = "status-card status-APPROVED";
+        }
+        if(els.course) els.course.classList.remove("hidden");
     }
     else if (status === "REJECTED") {
-        statusSection.classList.remove("hidden");
-        statusDisplay.textContent = "APPLICATION REJECTED";
-        statusDisplay.className = "status-card status-REJECTED";
-        rejectReason.classList.remove("hidden");
-        rejectReason.innerText = "Application Rejected. Please upload corrected documents.";
-        uploadSection.classList.remove("hidden");
+        if(els.status) els.status.classList.remove("hidden");
+        if(els.display) {
+            els.display.textContent = "APPLICATION REJECTED";
+            els.display.className = "status-card status-REJECTED";
+        }
+        if(els.reason) {
+            els.reason.classList.remove("hidden");
+            els.reason.innerText = "Application Rejected. Please upload corrected documents.";
+        }
+        if(els.upload) els.upload.classList.remove("hidden");
     }
 }
 
@@ -178,10 +224,8 @@ if (uploadForm) {
     uploadForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const instId = sessionStorage.getItem("currentInstId");
-        const fileInput = document.getElementById("docFile");
-
         const formData = new FormData();
-        formData.append("file", fileInput.files[0]);
+        formData.append("file", document.getElementById("docFile").files[0]);
 
         try {
             const res = await fetch(`${API_BASE}/institutions/${instId}/documents/upload`, {
@@ -191,16 +235,14 @@ if (uploadForm) {
             });
 
             if (res.ok) {
-                // LOGIC FIX: Set flag so next reload knows we are waiting
                 localStorage.setItem(`hasUploaded_${instId}`, "true");
-
-                alert("Document Uploaded! Waiting for Admin Approval.");
-                location.reload();
+                showToast("Document Uploaded! Verification Pending.");
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert("Upload Failed");
+                showToast("Upload Failed", "error");
             }
         } catch (err) {
-            alert("Error uploading");
+            showToast("Error uploading", "error");
         }
     });
 }
@@ -228,13 +270,13 @@ if (courseForm) {
             });
 
             if (res.ok) {
-                alert("Course Added Successfully!");
+                showToast("Course Added Successfully!");
                 e.target.reset();
             } else {
-                alert("Failed to add course");
+                showToast("Failed to add course", "error");
             }
         } catch (err) {
-            alert("Error adding course");
+            showToast("Error adding course", "error");
         }
     });
 }
@@ -242,7 +284,7 @@ if (courseForm) {
 // --- ADMIN DASHBOARD ---
 async function loadAdminView() {
     const instId = document.getElementById("adminInstId").value;
-    if (!instId) return alert("Enter ID");
+    if (!instId) return showToast("Enter ID", "error");
 
     sessionStorage.setItem("adminTargetId", instId);
 
@@ -271,10 +313,11 @@ async function loadAdminView() {
                 });
             }
         } else {
-            alert("Could not fetch documents. ID might be wrong or no docs uploaded.");
+            showToast("Could not fetch documents. Check ID.", "error");
         }
     } catch (err) {
         console.error(err);
+        showToast("Error fetching documents", "error");
     }
 }
 
@@ -294,10 +337,10 @@ async function downloadDoc(instId, docId, fileName) {
             a.click();
             a.remove();
         } else {
-            alert("Download failed");
+            showToast("Download failed", "error");
         }
     } catch(err) {
-        alert("Error downloading file");
+        showToast("Error downloading file", "error");
     }
 }
 
@@ -311,7 +354,7 @@ async function verifyInstitution(approve) {
 
     if (!approve) {
         const reason = document.getElementById("rejectReason").value;
-        if (!reason) return alert("Please provide a rejection reason");
+        if (!reason) return showToast("Please provide a rejection reason", "error");
         url += `&reason=${encodeURIComponent(reason)}`;
     }
 
@@ -322,12 +365,12 @@ async function verifyInstitution(approve) {
         });
 
         if (res.ok) {
-            alert(approve ? "Institution Approved" : "Institution Rejected");
-            location.reload();
+            showToast(approve ? "Institution Approved" : "Institution Rejected");
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert("Action failed");
+            showToast("Action failed", "error");
         }
     } catch (err) {
-        alert("Error processing verification");
+        showToast("Error processing verification", "error");
     }
 }

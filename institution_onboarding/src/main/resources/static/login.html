@@ -2,25 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Login - EduConnect</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <h2>Login</h2>
-    <form id="loginForm">
-        <input type="text" id="username" placeholder="Email (or Admin Username)" required>
-        <input type="password" id="password" placeholder="Password" required>
+<nav id="navbar" class="navbar"></nav>
 
-        <div style="margin: 10px 0;">
-            <label>
-                <input type="checkbox" id="isAdmin" style="width: auto;"> Login as Admin
-            </label>
-        </div>
+<div class="main-content">
+    <div class="container">
+        <h2>Welcome Back</h2>
+        <p>Please enter your credentials to continue.</p>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Email (Username)" required>
+            <input type="password" id="password" placeholder="Password (Phone)" required>
 
-        <button type="submit">Login</button>
-        <button type="button" class="secondary" onclick="window.location.href='index.html'">Back</button>
-    </form>
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <input type="checkbox" id="isAdmin" style="width: auto; margin: 0 10px 0 0;">
+                <label for="isAdmin">Log in as Administrator</label>
+            </div>
+
+            <button type="submit" class="full-width">Secure Login</button>
+            <button type="button" class="secondary full-width" style="margin-top: 10px;" onclick="window.location.href='index.html'">Cancel</button>
+        </form>
+    </div>
 </div>
 <script src="script.js"></script>
 </body>
