@@ -8,7 +8,6 @@ public class InstitutionRequest {
     private String type;
     private String email;
     private String phone;
-    private String registrationNumber;
     private String address;
     private String website;
 }

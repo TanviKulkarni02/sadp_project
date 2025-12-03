@@ -2,18 +2,21 @@
 <html>
 <head>
     <title>Login</title>
-    <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-<h2>Login</h2>
 
-<input id="loginUsername" placeholder="Email"><br><br>
-<input id="loginPassword" placeholder="Password" type="password"><br><br>
+<h2>Institution Onboarding – Login</h2>
 
-<button onclick="doLogin()">Login</button>
+<div class="card">
+    <input id="loginUsername" placeholder="Email">
+    <input id="loginPassword" placeholder="Phone" type="password">
+    <button onclick="doLogin()">Login</button>
 
-<p>Don't have an account? <a href="index.html">Register here</a></p>
+    <p>Not registered? <a href="index.html">Register now</a></p>
+</div>
 
+<script src="script.js"></script>
 </body>
 </html>

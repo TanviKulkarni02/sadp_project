@@ -1,34 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Institution Portal</title>
-    <script src="script.js"></script>
+    <title>Institution Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<script>
-    if (!localStorage.getItem("token")) {
-        alert("Please login first.");
-        window.location.href = "login.html";
-    }
-</script>
-
 <h2>Institution Dashboard</h2>
 
-<h3>Check Status</h3>
-<input id="instId" placeholder="Institution ID">
-<button onclick="loadStatus()">Get Status</button>
-<p id="statusBox"></p>
+<div class="card">
 
-<hr>
+    <h3>Your Institution ID</h3>
+    <input id="instId" placeholder="Enter ID to operate">
 
-<h3>Upload Document</h3>
-<input id="document" type="file">
-<button onclick="uploadDocument()">Upload</button>
+    <button onclick="loadInstitutionState()">Load Dashboard</button>
 
-<br><br>
-<a href="login.html" onclick="localStorage.clear()">Logout</a>
+    <div id="uploadSection" class="hidden">
+        <h3>Upload Required Documents</h3>
+        <input type="file" id="docFile">
+        <button onclick="uploadDocument()">Upload</button>
+    </div>
 
+    <div id="statusSection" class="hidden">
+        <h3>Application Status</h3>
+        <p id="statusText"></p>
+    </div>
+
+    <div id="rejectionSection" class="hidden">
+        <h3>Rejection Reason</h3>
+        <p id="rejectReason"></p>
+        <p>Please reupload corrected documents.</p>
+    </div>
+
+    <div id="courseSection" class="hidden">
+        <h3>Add New Course</h3>
+        <input id="courseName" placeholder="Course Name">
+        <input id="courseDesc" placeholder="Course Description">
+        <button onclick="addCourse()">Add Course</button>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const idInput = document.getElementById("instId");
+
+        // Only auto-load if ID was saved previously
+        if (localStorage.getItem("institutionId")) {
+            idInput.value = localStorage.getItem("institutionId");
+            loadInstitutionState();
+        }
+    });
+</script>
 </body>
 </html>

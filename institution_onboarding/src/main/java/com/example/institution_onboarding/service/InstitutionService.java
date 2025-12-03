@@ -32,12 +32,15 @@ public class InstitutionService {
     // ------------------------------------------------------------
     public Institution register(InstitutionRequest request) {
 
+        // Auto-generate registration number
+        String regNumber = "INST-" + System.currentTimeMillis();
+
         Institution institution = Institution.builder()
                 .name(request.getName())
                 .type(request.getType())
                 .email(request.getEmail())
                 .phone(request.getPhone())
-                .registrationNumber(request.getRegistrationNumber())
+                .registrationNumber(regNumber)   // <-- auto-generated
                 .address(request.getAddress())
                 .website(request.getWebsite())
                 .status(Status.PENDING)
@@ -45,6 +48,7 @@ public class InstitutionService {
 
         Institution saved = institutionRepository.save(institution);
 
+        // Create login credentials
         User user = User.builder()
                 .username(request.getEmail())
                 .password(request.getPhone())
