@@ -3,7 +3,6 @@
 const API_BASE = "/api";
 
 // --- UI HELPERS (Navbar & Toasts) ---
-
 document.addEventListener("DOMContentLoaded", () => {
     // 1. Inject Navbar
     const nav = document.getElementById("navbar");
@@ -18,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
     } else {
-        // Only show Login link if not on auth pages
         if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('register.html')) {
              navContent += `
                 <div class="nav-links">
@@ -27,25 +25,32 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
     }
-
     if(nav) nav.innerHTML = navContent;
 
     // 2. Create Toast Container
     const toastContainer = document.createElement("div");
     toastContainer.id = "toast-container";
     document.body.appendChild(toastContainer);
+
+    // 3. AUTO-FILL ID (New Feature)
+    // If we are on the dashboard, check if we have a saved ID from registration
+    const instInput = document.getElementById("instIdInput");
+    if(instInput) {
+        const savedId = localStorage.getItem("saved_inst_id");
+        if(savedId) {
+            instInput.value = savedId;
+            // Optional: Auto-load if you prefer, but let's let user click to be safe
+            // loadInstitutionDashboard();
+        }
+    }
 });
 
-// Toast Notification Function
 function showToast(message, type = "success") {
     const container = document.getElementById("toast-container");
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
     toast.innerText = message;
-
     container.appendChild(toast);
-
-    // Remove after 3 seconds
     setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
@@ -54,10 +59,7 @@ function showToast(message, type = "success") {
 
 // --- AUTH HELPER ---
 function getToken() { return localStorage.getItem("token"); }
-
-function getAuthHeaders() {
-    return { "Authorization": `Bearer ${getToken()}` };
-}
+function getAuthHeaders() { return { "Authorization": `Bearer ${getToken()}` }; }
 
 function logout() {
     localStorage.removeItem("token");
@@ -65,7 +67,7 @@ function logout() {
     window.location.href = "login.html";
 }
 
-// --- REGISTRATION ---
+// --- REGISTRATION (Updated to Save ID) ---
 const registerForm = document.getElementById("registerForm");
 if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
@@ -88,8 +90,10 @@ if (registerForm) {
             const result = await res.json();
 
             if (res.ok) {
-                // Keep alert here as it contains critical ID info users must see/copy
-                alert(`Registration Successful!\n\nIMPORTANT: Your Institution ID is: ${result.id}\nPlease save this ID.`);
+                // FEATURE: Save ID to local storage so they don't forget it
+                localStorage.setItem("saved_inst_id", result.id);
+
+                alert(`Registration Successful!\n\nIMPORTANT: Your Institution ID is: ${result.id}\nWe have auto-saved this for your next login.`);
                 window.location.href = "login.html";
             } else {
                 showToast("Registration failed", "error");
@@ -121,7 +125,6 @@ if (loginForm) {
             if (res.ok) {
                 const token = await res.text();
                 localStorage.setItem("token", token);
-
                 const isAdmin = document.getElementById("isAdmin").checked;
                 window.location.href = isAdmin ? "admin.html" : "institution.html";
             } else {
@@ -134,30 +137,39 @@ if (loginForm) {
     });
 }
 
-// --- INSTITUTION DASHBOARD ---
+// --- INSTITUTION DASHBOARD (FIXED VALIDATION) ---
 async function loadInstitutionDashboard() {
     const instId = document.getElementById("instIdInput").value;
     if (!instId) return showToast("Please enter an ID", "error");
 
-    sessionStorage.setItem("currentInstId", instId);
-    document.getElementById("idSection").classList.add("hidden");
-    document.getElementById("dashboardContent").classList.remove("hidden");
-
-    // Update Welcome Text if exists
-    const badge = document.getElementById("welcomeBadge");
-    if(badge) badge.innerText = `Session ID: ${instId}`;
+    // Do NOT hide ID section yet. Verify first.
 
     try {
         const res = await fetch(`${API_BASE}/institutions/${instId}/status`, {
             headers: getAuthHeaders()
         });
 
+        // --- SECURITY CHECK ---
+        if (res.status === 403 || res.status === 401) {
+            // STOP! This ID does not belong to the logged-in user
+            showToast("⛔ Access Denied: You do not own this Institution ID.", "error");
+            return; // Exit function, do not show dashboard
+        }
+
+        // Only proceed if status is OK (200) or Not Found (404 - means new/no docs) or Server Error (500)
+
+        sessionStorage.setItem("currentInstId", instId);
+        // NOW we can hide the input section
+        document.getElementById("idSection").classList.add("hidden");
+        document.getElementById("dashboardContent").classList.remove("hidden");
+
+        const badge = document.getElementById("welcomeBadge");
+        if(badge) badge.innerText = `Session ID: ${instId}`;
+
         if (res.status === 404 || res.status === 500) {
             renderState("NEW");
         } else {
             const status = await res.text();
-
-            // SMART STATE LOGIC
             const localUploadFlag = localStorage.getItem(`hasUploaded_${instId}`);
 
             if (status === "PENDING" && !localUploadFlag) {
@@ -168,7 +180,7 @@ async function loadInstitutionDashboard() {
         }
     } catch (err) {
         console.error(err);
-        renderState("NEW");
+        showToast("Connection Error", "error");
     }
 }
 
@@ -182,7 +194,6 @@ function renderState(status) {
         reason: document.getElementById("rejectionReason")
     };
 
-    // Reset All
     Object.values(els).forEach(el => { if(el) el.classList.add("hidden"); });
 
     if (status === "NEW") {
@@ -239,7 +250,8 @@ if (uploadForm) {
                 showToast("Document Uploaded! Verification Pending.");
                 setTimeout(() => location.reload(), 1500);
             } else {
-                showToast("Upload Failed", "error");
+                if(res.status === 403) showToast("You are not authorized to upload for this ID", "error");
+                else showToast("Upload Failed", "error");
             }
         } catch (err) {
             showToast("Error uploading", "error");
@@ -285,7 +297,6 @@ if (courseForm) {
 async function loadAdminView() {
     const instId = document.getElementById("adminInstId").value;
     if (!instId) return showToast("Enter ID", "error");
-
     sessionStorage.setItem("adminTargetId", instId);
 
     try {
@@ -316,7 +327,6 @@ async function loadAdminView() {
             showToast("Could not fetch documents. Check ID.", "error");
         }
     } catch (err) {
-        console.error(err);
         showToast("Error fetching documents", "error");
     }
 }
