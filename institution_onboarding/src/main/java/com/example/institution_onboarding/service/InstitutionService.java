@@ -18,6 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+
 public class InstitutionService {
 
     private final InstitutionRepository institutionRepository;
@@ -107,4 +108,43 @@ public class InstitutionService {
             throw new RuntimeException("Access denied");
         }
     }
+    public InstitutionDocument uploadDocument(Long institutionId, MultipartFile file) {
+        try {
+            Institution institution = institutionRepository.findById(institutionId)
+                    .orElseThrow(() -> new RuntimeException("Institution not found"));
+
+            // Create upload directory if missing
+            File folder = new File(uploadDir);
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+
+            // Save file to disk
+            String filePath = uploadDir + "/" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            File savedFile = new File(filePath);
+            file.transferTo(savedFile);
+
+            // Store path & file info in DB
+            InstitutionDocument doc = new InstitutionDocument();
+            doc.setInstitution(institution);
+            doc.setFileName(file.getOriginalFilename());
+            doc.setFilePath(filePath);
+
+            return documentRepository.save(doc);
+
+        } catch (IOException e) {
+            throw new RuntimeException("File upload failed");
+        }
+    }
+    public InstitutionCourse addCourse(Long institutionId, InstitutionCourse course) {
+
+        Institution institution = institutionRepository.findById(institutionId)
+                .orElseThrow(() -> new RuntimeException("Institution not found"));
+
+        course.setInstitution(institution);
+
+        return courseRepository.save(course);
+    }
+
+
 }

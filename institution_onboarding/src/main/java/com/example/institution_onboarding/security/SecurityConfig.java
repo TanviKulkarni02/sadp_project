@@ -27,7 +27,7 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final UserDetailsService userDetailsService;
 
-    // -----------------------------------------------------------------
+    // ----------------------------------------------------------
     @Bean
     public AuthenticationProvider authProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
@@ -35,19 +35,19 @@ public class SecurityConfig {
         return provider;
     }
 
-    // -----------------------------------------------------------------
+    // ----------------------------------------------------------
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();  // simplified for project
+        return NoOpPasswordEncoder.getInstance();
     }
 
-    // -----------------------------------------------------------------
+    // ----------------------------------------------------------
     @Bean
     public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    // -----------------------------------------------------------------
+    // ----------------------------------------------------------
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -56,19 +56,24 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/", "/index.html", "/login.html", "/register.html",
-                                "/admin.html", "/institution.html", "/style.css", "/script.js").permitAll()
+                        // Public frontend files
+                        .requestMatchers("/", "/index.html", "/login.html", "/institution.html",
+                                "/admin.html", "/style.css", "/script.js").permitAll()
 
+                        // Public APIs
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/institutions/register").permitAll()
 
+                        // Institution-only actions
+                        .requestMatchers("/api/institutions/*/status").hasAuthority("INSTITUTION")
+                        .requestMatchers("/api/institutions/*/documents/upload").hasAuthority("INSTITUTION")
 
-                        // Admin-only routes
+                        // Admin-only actions
                         .requestMatchers("/api/institutions/*/verify").hasAuthority("ADMIN")
                         .requestMatchers("/api/institutions/*/documents").hasAuthority("ADMIN")
                         .requestMatchers("/api/institutions/*/documents/*").hasAuthority("ADMIN")
 
-                        // Everything else requires token
+                        // Any other API → user must be logged in
                         .anyRequest().authenticated()
                 )
 
